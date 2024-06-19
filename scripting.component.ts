@@ -595,8 +595,7 @@ export class ScriptingComponent implements OnInit, OnDestroy {
 				// _.map(this.subRowData, (md, i) => md.sNo = i + 1);
 				// this.filteredSRdata = new MatTableDataSource(this.subRowData);
 				// this.filteredSRdata.paginator = this.srPaginator;
-				console.log("this.router.url "+this.router.url);
-				if(this.router.url.includes("modules")){
+				if(res.data.modLevel===0){
 					this.getAllModules();
 				}else{
 					this.subRowData.splice(0, 0, res.data);
