@@ -1,0 +1,1243 @@
+<div class="py-2">
+    <div class="w-100 mb-0" style="padding-bottom: 20px;padding-left: 24px;">
+        <div class="custom-dialog-hdr">
+            <span class="justify-left modal-title text-muted font-mdeium-2 text-bold-500 mb-2">
+                {{data?.headerName}}
+            </span>
+        </div>
+        <div class="custom-dialog-x">
+            <span mat-dialog-close class="float-right crsr_pntr" matTooltip="Close">
+                <i class="icon-x font-medium-1 text-secondary"></i>
+            </span>
+        </div>
+    </div>
+
+
+    <div *ngIf="data.type === 'TD'">
+        <h1 class="text-center font-medium-1 text-muted mb-0" mat-dialog-title>Want to Remove Testdata ?</h1>
+        <h1 class="text-center font-small-3 text-danger" mat-dialog-title>Current Testdata Values will removed from
+            steps</h1>
+        <div class="d-flex justify-content-center align-items-center" mat-dialog-actions>
+            <button mat-raised-button color="basic" type="button" mat-dialog-close>No Thanks</button>
+            <button class="text-danger" mat-button [mat-dialog-close]="data">Yes</button>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'TAGGEDTS'">
+        <div class="col-12">
+            <table class="table table-striped" *ngIf="data.taggdTs && data.taggdTs?.length > 0">
+                <thead>
+                    <tr>
+                        <th class="text-muted">SNo</th>
+                        <th class="text-muted">Suite Name</th>
+                        <th class="text-muted">Created On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let tgTs of data.taggdTs;let tgI = index;">
+                        <td>{{tgI + 1}}</td>
+                        <td>{{tgTs.name}}</td>
+                        <td>{{tgTs.dtCr | date:'dd-MMM-yyyy'}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h6 class="text-info text-center" *ngIf="data.taggdTs && data.taggdTs?.length <= 0">
+                No TestSuites found
+            </h6>
+        </div>
+        <div class="d-flex justify-content-center align-items-center" mat-dialog-actions>
+            <button mat-raised-button color="primary" (click)="onNoClick()">Close</button>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'PARAMS'">
+        <div class="col-12" *ngIf="data.paramType === 'STATIC'">
+            <div class="col-12" style="text-align: center;">
+                <form (ngSubmit)="saveParamStatic();">
+                    <div class="col-12 d-flex flex-row" *ngIf="!createEnv">
+                        <mat-form-field class="w-100">
+                            <input matInput type="text" name="paramStatic" value="{{paramStatic}}"
+                                [(ngModel)]="paramStatic" placeholder="Enter Value">
+                        </mat-form-field>
+
+                    </div>
+                    <div class="col-12 text-center" *ngIf="!createEnv">
+                        <button style="margin-top: 20px;" [disabled]="!paramStatic || paramStatic?.length <= 0"
+                            mat-raised-button color="primary" type="submit" value="Save Static Value"
+                            (click)="saveParamStatic();">Save</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12" *ngIf="data.paramType === 'ENV-VAR'">
+            <div class="col-12" style="text-align: center;">
+                <form (ngSubmit)="saveParamStatic();">
+                    <!-- <div class="col-12 d-flex flex-row ml-5" *ngIf="!createEnv && envProp.config?.length > 0 ? createEnv = true : false"> -->
+                    <div class="col-12 d-flex flex-row ml-5"
+                        *ngIf="!createEnv && envProp && envProp.config && envProp.config.length > 0">
+                        <!-- <div class="col-12 d-flex flex-row ml-5"
+                        *ngIf="!createEnv"> -->
+
+                        <!-- <mat-form-field class="w-100">
+                        <input matInput type="text" name="paramStatic" value="{{paramStatic}}" [(ngModel)]="paramStatic"
+                            placeholder="Enter Value">
+                    </mat-form-field> -->
+                        <mat-form-field class="w-100">
+                            <mat-label>Select Env Properties</mat-label>
+                            <mat-select class="w-100" placeholder="Select Env" [(ngModel)]="paramStatic"
+                                name="paramStatic" id="paramStatic">
+                                <mat-option [value]="pro.name" *ngFor="let pro of envProp.config;">
+                                    {{pro.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <div class="col-2 p-1 mt-3">
+                            <i class="rt-color-inverse font-medium-1 icon-plus crsr_pntr" (click)="createNewEnv();"></i>
+                        </div>
+                    </div>
+                    <div class="col-12 text-center"
+                        *ngIf="!createEnv && envProp && envProp.config && envProp.config.length > 0">
+                        <button style="margin-top: 20px;" [disabled]="!paramStatic || paramStatic?.length <= 0"
+                            mat-raised-button color="primary" type="submit" value="Save Static Value"
+                            (click)="saveParamStatic();">Save</button>
+                    </div>
+                    <div class="d-flex flex-row justify-content-center" *ngIf="createEnv || !envProp">
+                        <div class="p-6" style="width: 100%;">
+                            <mat-form-field class="w-100">
+                                <input matInput class="font-medium-3 text-bold-500" type="text" name="propName"
+                                    placeholder="Property" [(ngModel)]="propName" [value]="propName"
+                                    [ngModelOptions]="{standalone: true}">
+                            </mat-form-field>
+                        </div>
+                        <div class="p-3">
+                            <section class="example-section">
+                                <mat-checkbox class="example-margin" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="isEncrypted">Encrypt
+                                </mat-checkbox>
+                            </section>
+                        </div>
+                        <div class="p-3">
+                            <div class="" style="font-size: 1.6em !important;">
+                                <i class="rt-color-inverse icon-save-fill crsr_pntr" (click)="saveNewProp()"></i>
+                                <i class="rt-color-inverse icon-x ml-2 icon-close-1 crsr_pntr"
+                                    (click)="closeProp()"></i>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12" *ngIf="data.paramType === 'API'">
+            <div class="col-12" style="text-align: center;">
+                <form (ngSubmit)="saveParamStatic();">
+                    <div class="col-12 d-flex flex-row" *ngIf="apiList && apiList.length > 0">
+                        <mat-form-field class="w-100">
+                            <mat-label>Select API</mat-label>
+                            <mat-select class="w-100" placeholder="Select API" [(ngModel)]="paramStatic"
+                                name="paramStatic" id="paramStatic">
+                                <mat-option [value]="obj.name" *ngFor="let obj of apiList;">
+                                    {{obj.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 d-flex flex-row" *ngIf="!apiList || apiList.length < 1">
+                        <span style="margin-left: 26%;">First Configure API in Data Module </span>
+                    </div>
+                    <div class="col-12 text-center" *ngIf="apiList && apiList.length > 0">
+                        <button style="margin-top: 20px;" [disabled]="!paramStatic || paramStatic?.length <= 0"
+                            mat-raised-button color="primary" type="submit" value="Save Static Value"
+                            (click)="saveParamStatic();">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12" *ngIf="data.paramType === 'DB'">
+            <div class="col-12" style="text-align: center;">
+                <form (ngSubmit)="saveParamStatic();">
+                    <div class="col-12 d-flex flex-row" *ngIf="dbList && dbList.length > 0">
+                        <mat-form-field class="w-100">
+                            <mat-label>Select DB</mat-label>
+                            <mat-select class="w-100" placeholder="Select DB" [(ngModel)]="paramStatic"
+                                name="paramStatic" id="paramStatic">
+                                <mat-option [value]="obj.name" *ngFor="let obj of dbList;">
+                                    {{obj.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 d-flex flex-row" *ngIf="!dbList || dbList.length < 1">
+                        <span style="margin-left: 26%;">First Configure DB in Data Module </span>
+                    </div>
+                    <div class="col-12 text-center" *ngIf="dbList && dbList.length > 0">
+                        <button style="margin-top: 20px;" [disabled]="!paramStatic || paramStatic?.length <= 0"
+                            mat-raised-button color="primary" type="submit" value="Save Static Value"
+                            (click)="saveParamStatic();">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12" *ngIf="data.paramType === 'DATA'">
+            <!-- <h1 class="text-muted font-small-3 font_md mb-3 ng-star-inserted" mat-dialog-title>Choose Test Data</h1> -->
+            <div class="col-12">
+                <div class="col-12 d-flex flex-row" style="text-align:center;">
+                    <div class="col-12">
+                        <mat-form-field class="w-75">
+                            <mat-select #mySlct *ngIf="!isNewVal" #hdrSlct placeholder="Select Headers"
+                                [(ngModel)]="hdrVal" name="hdrVal" id="hdrVal" (openedChange)="isOpened = $event;">
+                                <mat-option [value]="hdr" *ngFor="let hdr of paramsTdHeaders;trackBy: customTrack">
+                                    {{hdr}}
+                                </mat-option>
+                            </mat-select>
+                            <input *ngIf="isNewVal" matInput class="font-small-3 text-muted text-bold-400 pb-2"
+                                type="text" name="newHdrval" value="{{newHdrval}}" [(ngModel)]="newHdrval"
+                                placeholder="Enter New" (keydown.space)="$event.preventDefault()">
+                        </mat-form-field>
+                        <span>
+                            <button *ngIf="!isNewVal" mat-icon-button color="basic" class="ml-3" matTooltip="Add New"
+                                matTooltipClass="bg-dark font-small-2" (click)="isNewVal = true;newHdrval = '';">
+                                <i class="icon-plus text-muted font-small-3"></i>
+                            </button>
+                        </span>
+                        <div *ngIf="isNewVal">
+                            <button mat-raised-button color="basic" class="mr-2" matTooltip="Cancel"
+                                matTooltipClass="bg-dark font-small-2" (click)="isNewVal = !isNewVal;">
+                                Cancel
+                            </button>
+                            <button mat-raised-button color="primary" matTooltip="Add New"
+                                matTooltipClass="bg-dark font-small-2" (click)="saveHdr(newHdrval);"
+                                [disabled]="!newHdrval || newHdrval?.length <= 0">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="col-12 d-flex" *ngIf="!isNewVal">
+                    <mat-radio-group class="d-flex justify-content-between w-75 mx-auto py-3" aria-label="Select an option" [(ngModel)]="data.paramDataType">
+                        <mat-radio-button value="DBLQT">Double Quote - <strong class="font-small-3">&#8221;DATA&#8221;</strong></mat-radio-button>
+                        <mat-radio-button value="SGLQT">Single Quote - <strong class="font-small-3">&#8217;DATA&#8217;</strong></mat-radio-button>
+                        <mat-radio-button value="NONE">None</mat-radio-button>
+                    </mat-radio-group>
+                </div> -->
+                <div class="col-12 text-center" *ngIf="!isNewVal">
+                    <button class="mr-2" mat-raised-button color="basic" type="button" value="Clear value"
+                        (click)="hdrVal='';">Clear
+                        All</button>
+                    <button mat-raised-button color="primary" type="button" value="Save Data Value"
+                        (click)="saveParamData();" [disabled]="!hdrVal || hdrVal?.length <= 0">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 " *ngIf="data.paramType === 'LOC'">
+            <!-- <h1 class="text-muted font-small-3 font_md mb-3 ng-star-inserted" mat-dialog-title>Choose Locator</h1> -->
+            <div class="col-12 row">
+                <div class="col-12">
+                    <form #locFm="ngForm" autocomplete="off">
+                        <div class="col-12 d-flex flex-row ml-5" *ngIf="!createPage">
+                            <!-- <mat-form-field class="col-5 w-100">
+                            <mat-select #mySlct placeholder="Choose Loc Repo" (selectionChange)="chooseLoc(locId);"
+                                        [(ngModel)]="locId" name="locId" id="locId" (openedChange)="isOpened = $event;">
+                                <mat-option [value]="loc?._id" *ngFor="let loc of locRepoData">{{loc?.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field> -->
+                            <mat-form-field class="col-10  w-100">
+                                <mat-select placeholder="Choose Page" #page (selectionChange)="choosePage(page.value);"
+                                    [(ngModel)]="pageId" name="pageId" id="pageId">
+                                    <mat-option [value]="page?.pageId" *ngFor="let page of pageList">
+                                        {{page?.pageName}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <div class="col-2 p-1 mt-3" *ngIf=" !createEle">
+                                <i class="rt-color-inverse font-medium-1 icon-plus crsr_pntr"
+                                    (click)="createNewPage();"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex flex-row ml-5" *ngIf="createPage && !createEle">
+                            <mat-form-field class="col-10 w-100">
+                                <input matInput class="font-medium-3 text-bold-500" type="text" name="filename"
+                                    placeholder="Page/Group Name" [(ngModel)]="pageName" [value]="pageName">
+                            </mat-form-field>
+                            <div class="col-2 p-1 mt-4" style="font-size: 1.6em !important;">
+                                <i class="rt-color-inverse icon-save-fill crsr_pntr" (click)="saveNewPage()"></i>
+                                <i class="rt-color-inverse icon-x ml-2 icon-close-1 crsr_pntr"
+                                    (click)="closePage()"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex flex-row ml-5" *ngIf="pageId !=='' && !createPage && !createEle">
+                            <mat-form-field class="col-10 w-100">
+                                <input type="text" matInput [matAutocomplete]="auto" placeholder="Choose Locator"
+                                    name="configNm" #eleName (ngModelChange)="filterEle(eleName.value)"
+                                    [value]="configNm" [(ngModel)]="configNm">
+                                <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+                                    <mat-option [value]="config.objName" *ngFor="let config of configData"
+                                        (onSelected)="chooseEle(config)" (onSelectionChange)="chooseEle(config)">
+                                        {{config?.objName}}</mat-option>
+                                </mat-autocomplete>
+
+                            </mat-form-field>
+                            <!-- <mat-form-field class="col-10 w-100">
+                                    <mat-select #mySlct2 placeholder="Choose Locator" [(ngModel)]="configVal" name="configVal"
+                                                id="configVal" (openedChange)="isOpened2 = $event;">
+                                        <mat-option [value]="config?.objId" *ngFor="let config of configData"
+                                        (onSelected)="chooseEle(config)" (onSelectionChange)="chooseEle(config)" >
+                                            {{config?.objName}}</mat-option>
+                                    </mat-select>
+                            </mat-form-field> -->
+                            <div class="col-2 p-1 mt-3" *ngIf="!createEle">
+                                <i class="rt-color-inverse font-medium-1 icon-plus crsr_pntr"
+                                    (click)="createNewEle()"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex flex-row ml-5" *ngIf="createEle">
+                            <mat-form-field class="col-10 w-100">
+                                <input matInput class="font-medium-3 text-bold-500" type="text" required
+                                    name="locNameStep" placeholder="Locator Name" [(ngModel)]="eleName"
+                                    [value]="eleName" (ngModelChange)="getLocName($event)">
+                            </mat-form-field>
+                            <mat-error class="w-100 col-12"
+                                style="font-size: 11px;position: absolute;margin-top: 10%;margin-bottom: 2%;"
+                                *ngIf="!isvalidLocName">
+                                Enter valid name
+                            </mat-error>
+                            <div class="col-2 p-1 mt-4" style="font-size: 1.6em !important;">
+                                <i class="rt-color-inverse icon-save-fill crsr_pntr"
+                                    *ngIf="eleName !== '' && locFm.form.valid && isvalidLocName"
+                                    (click)="saveNewEle()"></i>
+                                <i class="rt-color-inverse icon-x ml-2 icon-close-1 crsr_pntr" (click)="closeEle()"></i>
+                            </div>
+                        </div>
+                        <div class="col-12 text-center" *ngIf="!createPage && !createEle">
+                            <button mat-raised-button color="basic" type="button" value="Clear value"
+                                (click)="locId='';pageId='';configVal='';">Clear
+                                All</button>
+                            <!-- <button class="ml-2" mat-raised-button color="primary"
+                                [disabled]=" pageId === '' || configVal ==='' ? true :false" type="button"
+                                value="Save Loc Value" (click)="saveLocData();">Saveeee</button> -->
+                            <button class="ml-2" mat-raised-button color="primary"
+                                [disabled]=" pageId === '' || configVal ===''? true :false" type="button"
+                                value="Save Loc Value" (click)="saveLocData();">Save</button>
+                        </div>
+                    </form>
+
+                    <!-- <form #locFm="ngForm" autocomplete="off">
+                <div class="col-12 d-flex flex-row ml-5"  *ngIf="!createPage">
+                        <mat-form-field class="col-5 w-100">
+                            <mat-select #mySlct placeholder="Choose Loc Repo" (selectionChange)="chooseLoc(locId);"
+                                        [(ngModel)]="locId" name="locId" id="locId" (openedChange)="isOpened = $event;">
+                                <mat-option [value]="loc?._id" *ngFor="let loc of locRepoData">{{loc?.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="col-5  w-100">
+                            <mat-select placeholder="Choose Page" #page (selectionChange)="choosePage(page.value);"
+                                        [(ngModel)]="pageId" name="pageId" id="pageId">
+                                <mat-option [value]="page?.DTP_Page_ID" *ngFor="let page of pageList">
+                                    {{page?.DTP_Page_Name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    <div class="col-2 p-1 mt-3" *ngIf=" !createEle" >
+                        <i class="rt-color-inverse font-medium-1 icon-plus crsr_pntr" (click)="createNewPage();"></i>
+                    </div>
+                </div>
+                <div class="col-12 d-flex flex-row ml-5"  *ngIf="createPage && !createEle">
+                    <mat-form-field class="col-10 w-100">
+                        <input matInput class="font-medium-3 text-bold-500" type="text" name="filename"  placeholder="Page/Group Name" [(ngModel)]="pageName" [value]="pageName" >
+                    </mat-form-field>
+                    <div class="col-2 p-1 mt-4" >
+                        <i class="rt-color-inverse font-medium-1 icon-save-fill crsr_pntr" (click)="saveNewPage()"></i>
+                        <i class="rt-color-inverse icon-x ml-2 font-medium-1 icon-close-1 crsr_pntr" (click)="closePage()"></i>
+                    </div>
+                </div>
+                <div class="col-12 d-flex flex-row ml-5"  *ngIf="pageId !=='' && !createPage && !createEle">
+                    <mat-form-field class="col-10 w-100">
+                        <input type="text" matInput [matAutocomplete]="auto" placeholder="Choose Loc" name="eleName"  #eleName (ngModelChange)="filterEle(eleName.value)" [value]="configNm" [(ngModel)]="configNm">
+                        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+                            <mat-option [value]="config.objName" *ngFor="let config of configData" (onSelected)="chooseEle(config)"
+                                        (onSelectionChange)="chooseEle(config)">
+                                {{config?.objName}}</mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                   
+                    <div class="col-2 p-1 mt-3" *ngIf="!createPage" >
+                        <i class="rt-color-inverse font-medium-1 icon-plus crsr_pntr"  (click)="createNewEle()"></i>
+                    </div>
+                </div>
+                <div class="col-12 d-flex flex-row ml-5"  *ngIf="createEle">
+                    <mat-form-field class="col-10 w-100">
+                        <input matInput class="font-medium-3 text-bold-500" type="text" pattern="[a-zA-Z0-9-._]*"   required name="locNameStep"  placeholder="Locator Name" [(ngModel)]="eleName" [value]="eleName" >
+                    </mat-form-field>
+                    <div class="col-2 p-1 mt-4" >
+                        <i class="rt-color-inverse font-medium-1 icon-save-fill crsr_pntr" *ngIf="eleName !== '' && locFm.form.valid" (click)="saveNewEle()"></i>
+                        <i class="rt-color-inverse icon-x ml-2 font-medium-1 icon-close-1 crsr_pntr" (click)="closeEle()"></i>
+                    </div>
+                </div>
+                <div class="col-12 text-center" *ngIf="!createPage && !createEle" >
+                    <button mat-raised-button color="basic" type="button" value="Clear value"
+                            (click)="locId='';pageId='';configVal='';">Clear
+                        All</button>
+                    <button class="ml-2" mat-raised-button color="primary" [disabled]=" pageId === '' || locId === '' || configVal ==='' ? true :false"  type="button" value="Save Loc Value"
+                            (click)="saveLocData();">Save</button>
+                </div>
+               </form> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Variable Popup -->
+        <div class="col-12" *ngIf="data.paramType === 'VARIABLE'">
+            <div class="col-12" style="text-align: center;">
+                <form #varFrm="ngForm" (ngSubmit)="saveParamStatic();">
+                    <div class="col-12 d-flex flex-row ml-5">
+                        <mat-form-field class="col-10 w-100">
+                            <mat-select (selectionChange)="onchangevar($event)" placeholder="Choose Variable Type"
+                                required>
+                                <mat-option *ngFor="let vr of vartype" [value]="vr.id">
+                                    {{vr.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 d-flex flex-row ml-5" *ngIf="showVar">
+                        <mat-form-field class="col-10 w-100">
+                            <mat-select class="w-100" placeholder="Select Variable" [(ngModel)]="paramStatic"
+                                name="paramStatic" id="paramStatic" (selectionChange)="getVarValue($event)">
+                                <mat-option *ngFor=" let vr of varList" [value]="vr.code">
+                                    {{vr.code}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <div class=" col-2 p-1 mt-3" *ngIf="!createVar">
+                            <i class="rt-color-inverse font-medium-1 icon-plus crsr_pntr" (click)="createNewVar()"></i>
+                        </div>
+                        <br>
+                    </div>
+                    <div class="col-12 d-flex flex-row ml-5" *ngIf="showVar && cvarValue != ''">
+                        <mat-form-field class="col-10 w-100">
+                            <input type="text" matInput id="cvarValue" [(ngModel)]="cvarValue" name="cvarValue"
+                                placeholder="Value" readonly />
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 text-center" *ngIf="!createVar">
+                        <button style="margin-top: 20px;" [disabled]="!paramStatic || paramStatic?.length <= 0"
+                            mat-raised-button color="primary" type="submit" value="Save Static Value"
+                            (click)="saveParamStatic();">Save</button>
+                    </div>
+                    <div class="col-12 d-flex flex-row ml-5" *ngIf="createVar">
+                        <div class="row">
+                            <div class="col-12">
+                                <mat-form-field class="col-12 w-100">
+                                    <input matInput pattern="^[0-9a-zA-Z][0-9a-zA-Z-_]*"
+                                        class="col-12 font-small-3 text-muted text-bold-400" type="text"
+                                        [(ngModel)]="varName" name="varName" placeholder="Name" maxlength="20" required>
+                                </mat-form-field>
+                            </div>
+                            <div class="col-12">
+                                <mat-form-field class="col-12 w-100">
+                                    <mat-label>Value</mat-label>
+                                    <input type="text" matInput id="varValue"
+                                        pattern="^[0-9a-zA-Z][0-9a-zA-Z\s-+=:.&@_]*" [(ngModel)]="varValue"
+                                        name="varValue" placeholder="Value" required />
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="" style="font-size: 1.6em !important;">
+                                <!-- <i class="rt-color-inverse icon-save-fill crsr_pntr" (click)="saveNewVar()"></i>
+                                <i class="rt-color-inverse icon-x ml-2 icon-close-1 crsr_pntr"
+                                    (click)="closeVar()"></i> -->
+                                <i class="rt-color-inverse icon-save-fill crsr_pntr"
+                                    *ngIf="varName !== '' && varValue !== ''" (click)="saveNewVar()"></i>
+                                <i class="rt-color-inverse icon-x ml-2 icon-close-1 crsr_pntr" (click)="closeVar()"></i>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12" *ngIf="data.paramType === 'FUNCTION'">
+            <div class="col-12" style="text-align: center;">
+                <form (ngSubmit)="saveParamStatic();">
+                    <div class="col-12 d-flex flex-row" *ngIf="funList && funList.length > 0">
+                        <mat-form-field class="w-100">
+                            <mat-label>Select Function</mat-label>
+                            <mat-select class="w-100" placeholder="Select Function" [(ngModel)]="paramStatic"
+                                name="paramStatic" id="paramStatic">
+                                <mat-option [value]="obj.functionName" *ngFor="let obj of funList;">
+                                    {{obj.functionName}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 d-flex flex-row" *ngIf="!funList || funList.length < 1">
+                        <span style="margin-left: 26%;">First Configure Function in Library Module </span>
+                    </div>
+                    <div class="col-12 text-center" *ngIf="funList && funList.length > 0">
+                        <button style="margin-top: 20px;" [disabled]="!paramStatic || paramStatic?.length <= 0"
+                            mat-raised-button color="primary" type="submit" value="Save Static Value"
+                            (click)="saveParamStatic();">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'NEWSC' || data.type === 'NEWMOD'">
+        <!-- <h1 class="text-muted font-small-3 font_md mb-3 ng-star-inserted" mat-dialog-title>
+            {{data.mode === 'EDIT' ?
+            'Modify' : 'Create'}} {{data.type === 'NEWSC' ? 'Scenario' : 'Module'}}</h1> -->
+        <form #scmdFrm="ngForm" (ngSubmit)="onNoClick(data);">
+            <div class="col d-flex row">
+                <div class="col-12">
+                    <mat-form-field class="w-100">
+                        <input #modName (ngModelChange)="checkInputValue($event)" matInput
+                            class="col-12 font-small-3 text-muted text-bold-400" type="text" name="modName"
+                            [(ngModel)]="data.name" placeholder="Name" minlength="5" maxlength="100" required>
+                            <mat-error style="font-size: 14px">Allowed special characters "." "_" "@" "-" "(" ")"</mat-error>
+                    </mat-form-field>
+                </div>
+                <div class="col-12">
+                    <mat-form-field class="w-100">
+                        <input matInput class="col-12 font-small-3 text-muted text-bold-400" type="text" name="modDesc"
+                            [(ngModel)]="data.desc" placeholder="Description">
+                    </mat-form-field>
+                </div>
+                <div class="col-12" *ngIf="data.type === 'NEWSC'">
+                    <mat-form-field class="w-100">
+                        <mat-chip-list #chipList>
+                            <mat-chip *ngFor="let tags of selectedTags" [selectable]="selectable"
+                                [removable]="removable" (removed)="removed(tags)">
+                                {{tags}}
+                                <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+                            </mat-chip>
+                            <input placeholder="Choose Tag" #fruitInput [formControl]="sgTag" [matAutocomplete]="auto"
+                                [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCode"
+                                [matChipInputAddOnBlur]="addOnBlur" (matChipInputTokenEnd)="added($event)" />
+                        </mat-chip-list>
+                        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selecte($event)">
+                            <mat-option *ngFor="let tag of filteredsgTag | async" [value]="tag.name"
+                                [disabled]="selectedTags.includes(tag.name)">
+                                {{ tag.name }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+
+                </div>
+                <div class="col-12" *ngIf="data.type === 'NEWSC'">
+                    <mat-form-field class="w-100">
+                        <input matInput class="col-12 font-small-3 text-muted text-bold-400" type="text"
+                            name="modotherId" [(ngModel)]="data.otherId" placeholder="Other Id">
+                    </mat-form-field>
+                </div>
+                <div class="col-12" *ngIf="data.type === 'NEWSC'">
+                    <mat-form-field class="w-100">
+                        <input matInput class="col-12 font-small-3 text-muted text-bold-400" [value]="deptSceData"
+                            [(ngModel)]="deptSceData" type="text" placeholder="Dependent Scenario"
+                            [formControl]="deptScenatioSearch" [disabled]="isStepDefDsbl" [matAutocomplete]="auto">
+
+                        <mat-autocomplete autoActiveFirstOption="false" #auto="matAutocomplete"
+                            [hidden]="aDeptSceData?.length <= 0">
+                            <mat-option *ngFor="let scenario of aDeptSceData" [value]="scenario?.name"
+                                (onSelected)="submitDeptScnario(scenario)"
+                                (onSelectionChange)="submitDeptScnario(scenario)">
+                                {{scenario?.mod_name}} -- {{scenario?.sCode}} -- {{scenario?.name}}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+                <div class="col-12" *ngIf="data.type === 'NEWSC'">
+                    <mat-form-field class="w-100" hidden="true">
+                        <input matInput class="col-12 font-small-3 text-muted text-bold-400" type="text"
+                            [(ngModel)]="reqData" [value]="reqData" placeholder="Requirement"
+                            [formControl]="requirementSearch" [matAutocomplete]="auto">
+
+                        <mat-autocomplete autoActiveFirstOption="false" #auto="matAutocomplete"
+                            [hidden]="aReqData?.length <= 0">
+                            <mat-option *ngFor="let require of aReqData" [value]="require?.name"
+                                (onSelected)="submitRequirement(require)"
+                                (onSelectionChange)="submitRequirement(require)">
+                                {{ require.name }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+                <!-- <div class="col-12" *ngIf="data.type === 'NEWSC'">
+                    <mat-form-field>
+                        <mat-label>Choose Sub Status</mat-label>
+                        <mat-select name="subStatus" (selectionChange)="chooseSubStatus($event.value)" [(ngModel)]="status">
+                          <mat-option *ngFor="let status of subStatus" value="{{status.value}}">{{status.value}}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                </div> -->
+            </div>
+            <div class="d-flex align-items-center justify-content-center pt-2">
+                <button mat-raised-button color="basic" [disabled]="!data.name && !data.desc" class="mr-2" type="button"
+                    (click)="data.name=undefined;data.desc=undefined;data.otherId=undefined;deptSceData=undefined;reqData=undefined;">Clear</button>
+                <button mat-raised-button color="primary"
+                    [disabled]="((scmdFrm.form.valid && data.name ? !(data.name).trim() : true) || isSaveName)"
+                    value="Save" type="submit" [mat-dialog-close]="data">
+                    {{data.mode === 'EDIT' ? 'Update' : 'Save'}}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div *ngIf="data.type === 'IMPORT EXCEL'">
+        <div class="col-10 mx-auto py-2">
+            <div class="custom-file my-3" id="customFile">
+                <input type="file" class="custom-file-input" id="uploadFile" aria-describedby="fileHelp"
+                    (change)="onSelectFile($event)" accept=".xlsx">
+                <label class="custom-file-label" for="uploadFile">
+                    <span *ngIf="scnrioFile != undefined">{{scnrioFile}}</span>
+                    <span *ngIf="scnrioFile == undefined">Upload File</span></label>
+            </div>
+
+            <div class="d-block text-center mt-3">
+                <button mat-raised-button color="primary" type="submit" value="Import Data"
+                    [disabled]="scnrioFile === undefined" (click)="createScenario()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="data.type === 'UPDATEEXTNLID'">
+        <form class="d-flex flex-row flex-wrap cstm_frm py-1 px-1" [formGroup]="extnlIdUpdate"
+            (ngSubmit)="onSubmitExt()">
+            <div class="col-md-12 col-12">
+                <mat-form-field class="mat-form-field col-12">
+                    <mat-label>External Id</mat-label>
+                    <input type="text" matInput name="input" formControlName="extnl_id" required />
+                </mat-form-field>
+            </div>
+            <div class="col-12" style="padding-left: 410px;top:13px;">
+                <button style="width: 100px;" class="mr-3" mat-raised-button color="primary"
+                    [disabled]="!extnlIdUpdate?.valid" type="submit">Update
+                </button>
+            </div>
+        </form>
+    </div>
+    <div *ngIf="data.type === 'DELETE'">
+        <div class="w-100 text-center py-3">
+            <font class="rt-color-danger icon-trash" style="font-size: 4em;"></font>
+        </div>
+        <div class="w-100 text-center">
+            <h5 class="my-3 text-muted font-medium-3">Are you sure ?</h5>
+            <h6 class="mt-3 mb-0 text-muted font-small-3">Deleting this item will be removed from your list.</h6>
+        </div>
+        <div class="text-center pt-3">
+            <button mat-raised-button color="basic" class="mr-2" mat-dialog-close>No, Cancel</button>
+            <button mat-raised-button class="rt-bg-danger text-white" [mat-dialog-close]="data">Yes, Delete</button>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'COPYSC'">
+        <div class="col-12">
+            <!-- <h4 class="font-medium-1 text-muted">Select Module</h4> -->
+            <div class="w-100">
+                <div class="d-flex flex-row flex-wrap mx-0">
+                    <div class="col-4 py-3">
+                        <mat-form-field>
+                            <mat-select placeholder="Module level-1" (selectionChange)="level1Chng(slctdMod1)"
+                                [(ngModel)]="slctdMod1">
+                                <mat-option *ngFor="let group1 of data.nodes" [value]="group1._id">
+                                    {{group1.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-4 py-3" *ngIf="subNodes1 && subNodes1?.length > 0">
+                        <mat-form-field [ngStyle]="{'opacity': slctdMod2 ? 1 : 0.5}">
+                            <mat-select placeholder="Module level-2" (selectionChange)="level2Chng(slctdMod2)"
+                                [(ngModel)]="slctdMod2">
+                                <mat-option *ngFor="let group1 of subNodes1" [value]="group1._id">
+                                    {{group1.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-4 py-3" *ngIf="slctdMod2 && subNodes2?.length > 0">
+                        <mat-form-field [ngStyle]="{'opacity': slctdMod3 ? 1 : 0.5}">
+                            <mat-select placeholder="Module level-3" (selectionChange)="level3Chng(slctdMod3)"
+                                [(ngModel)]="slctdMod3">
+                                <mat-option *ngFor="let group1 of subNodes2" [value]="group1._id">
+                                    {{group1.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-4 py-3" *ngIf="slctdMod3 && subNodes3?.length > 0">
+                        <mat-form-field [ngStyle]="{'opacity': slctdMod4 ? 1 : 0.5}">
+                            <mat-select placeholder="Module level-4" (selectionChange)="level4Chng(slctdMod4)"
+                                [(ngModel)]="slctdMod4">
+                                <mat-option *ngFor="let group1 of subNodes3" [value]="group1._id">
+                                    {{group1.name}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-4 py-3 d-flex align-items-center">
+                        <button mat-raised-button color="basic" value="Clear"
+                            (click)="slctdMod1=undefined;slctdMod2=undefined;slctdMod3=undefined;slctdMod4=undefined;subNodes1=[];subNodes2=[];subNodes3=[];">Clear</button>
+                    </div>
+                </div>
+            </div>
+            <div class="w-100 text-center">
+                <button mat-raised-button color="primary" type="button" value="Copy" [disabled]="slctdMod1===undefined"
+                    title="Copy your selected Scenario's to this Module"
+                    (click)="slctdMod1=undefined;slctdMod2=undefined;slctdMod3=undefined;slctdMod4=undefined;subNodes1=[];subNodes2=[];subNodes3=[];moveToMod('copy');"
+                    class="mr-2">
+                    Copy
+                </button>
+                <button mat-raised-button color="primary" type="button"
+                    title="Move your selected Scenario's to this Module" value="Move" [disabled]="slctdMod1===undefined"
+                    (click)="slctdMod1=undefined;slctdMod2=undefined;slctdMod3=undefined;slctdMod4=undefined;subNodes1=[];subNodes2=[];subNodes3=[];moveToMod('move');">
+                    Move
+                </button>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'SHOWSC'">
+        <div class="w-100 font-small-3 py-2 rt-color-danger text-center font-weight-800">
+            You cannot delete this Scenario. Below TestSuite's are using.</div>
+        <div class="w-100">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-muted">SNo</th>
+                        <th class="text-muted">TestSuite Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor='let node of data?.scs;let i = index'>
+                        <td>{{i+1}}</td>
+                        <td>{{node?.name}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="w-100 text-center pt-3">
+            <button mat-raised-button color="basic" type="button" value="Close" mat-dialog-close>Close</button>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'SGSTEPS'">
+        <div class="w-100">
+            <div class="w-100" style="max-height: 350px; overflow: auto;">
+                <span *ngIf="data.SGsteps?.length === 0"
+                    class="d-block py-4 w-100 font-medium-2 text-center font-weight-bold">
+                    No Steps Found
+                </span>
+                <span class="d-flex justify-content-end mr-1">
+                    <span class="d-inline-block mr-2">
+                        <span class="d-inline-block mr-1"
+                            style="width: 10px;height:10px;border-radius:50%;background:#1EBC68;"></span>
+                        <span>Data</span>
+                    </span>
+                    <span class="d-inline-block mr-2">
+                        <span class="d-inline-block mr-1"
+                            style="width: 10px;height:10px;border-radius:50%;background:#425f6d;"></span>
+                        <span>Static</span>
+                    </span>
+                    <span>
+                        <span class="d-inline-block mr-1"
+                            style="width: 10px;height:10px;border-radius:50%;background:#007bff;"></span>
+                        <span>Locators</span>
+                    </span>
+                </span>
+                <table class="table table-bordered" *ngIf="data.SGsteps?.length > 0">
+                    <thead>
+                        <tr>
+                            <th class="text-center text-muted font-small-2" width="3%">#</th>
+                            <th class="text-center text-muted font-small-2" width="3%">Type</th>
+                            <th class="text-left text-muted font-small-2" width="84%">Steps</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let step of data.SGsteps;let i=index" [class.invalidClass]="step.stpSts == 1"
+                            [ngClass]="{'font-italic': (step.stpSts == 1)}">
+                            <td class="text-center">{{i+1}}</td>
+                            <td class="text-center">
+                                <span *ngIf="step?.sScope === 'G'" matTooltip="Global">
+                                    <i class="icon-global rt-color-inverse font-weight-bold"></i>
+                                </span>
+                            </td>
+                            <td class="text-left">
+                                <div class="dropdown d-flex align-items-center"
+                                    *ngIf="step.paramValues?.length === 0 || !step.paramValues">
+                                    <span *ngIf="step.stpSts==1" style="font-size:19px">
+                                        //&nbsp;
+                                    </span>
+                                    <span style="width: 38px;" *ngIf="step.sType === 'SD'"
+                                        class="py-0 text-right align-self-start text-danger pl-0 crsr_pntr position-relative mr-2">
+                                        {{step?.kName}}</span>
+                                    <span style="white-space: nowrap;"
+                                        *ngIf="step.sType === 'SD' && step.scStpType !== 'C' && step.scStpType !== 'A'">{{step.sName}}</span>
+                                    <span class="d-flex w-100 text-muted align-items-center"
+                                        *ngIf="step.scStpType === 'C' || step.scStpType === 'SG' || step.scStpType === 'A'"
+                                        contenteditable="false" style="opacity: 0.8;">
+                                        <span style="white-space: nowrap"
+                                            *ngIf="step.scStpType === 'SG'">{{step.scStpVal}}</span>
+                                        <span style="white-space: nowrap" *ngIf="step.scStpType === 'C'">&#x23;
+                                            {{step.scStpVal}}</span>
+                                        <span style="white-space: nowrap" *ngIf="step.scStpType === 'A'">&#x2731;
+                                            {{step.scStpVal}}</span>
+                                    </span>
+                                </div>
+                                <div class="dropdown d-flex align-items-center" *ngIf="step.paramValues?.length > 0">
+                                    <form class="actnBtn" autocomplete="off" class="d-inline">
+                                        <ng-template #stepdesc><span [innerHtml]="step?.stepDesc"></span>
+                                        </ng-template>
+                                        <span class="stepDeChngfInput d-flex align-items-center flex-wrap flex-row"
+                                            [matTooltip]="(step.stepDesc?.length > 0) ? step.stepDesc : ''">
+                                            <span *ngIf="step.stpSts==1" style="font-size:19px">
+                                                //&nbsp;
+                                            </span>
+                                            <span style="width: 38px;" *ngIf="step.sType === 'SD'"
+                                                class="py-0 text-right align-self-start text-danger pl-0 crsr_pntr position-relative mr-2">
+                                                {{step?.kName}}</span>
+                                            <span *ngFor="let stepParam of step.splittedName;let paramIndex = index">
+                                                <span *ngIf="stepParam?.type === 'hint' && step.sType === 'SD'"
+                                                    class="mx-1">
+                                                    <span style="white-space: nowrap" class="d-inline-block"
+                                                        contenteditable="false">
+                                                        <strong><i>{{stepParam?.val}}</i></strong>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="stepParam?.type === 'static' && step?.sType === 'SD'"
+                                                    class="mx-1 position-relative locSctn">
+                                                    <span class="d-inline-block" contenteditable="false"
+                                                        style="white-space: nowrap;">
+                                                        <span style="font-weight: 700;color: #57b97e;"
+                                                            *ngIf="stepParam?.paramType === 'DATA'">{{stepParam?.val}}</span>
+                                                        <span style="font-weight: 700;color: #425f6d;"
+                                                            *ngIf="stepParam?.paramType === 'STATIC' || stepParam?.paramType === 'ENV-VAR' || stepParam?.paramType === 'API' || stepParam?.paramType === 'DB' || stepParam?.paramType === 'FUNCTION'">{{stepParam?.val}}</span>
+                                                        <span style="color: #007bff;font-weight: 500;"
+                                                            *ngIf="stepParam?.paramType === 'LOC'">{{stepParam?.configNm}}</span>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="stepParam?.type === 'placeholder' && step?.sType === 'SD'"
+                                                    class="position-relative locSctn">
+                                                    <span class="d-inline-block btn no_bg p-0 mx-1"
+                                                        contenteditable="false" attr.placeholder="{{stepParam?.val}}"
+                                                        style="color:#bdbdbd;font-style: italic;white-space: nowrap;">
+                                                        <i>( {{stepParam?.val}} )</i>
+                                                    </span>
+                                                </span>
+                                                <span style="white-space: nowrap;" class="d-inline-block"
+                                                    *ngIf="stepParam?.type === 'text' && step?.sType === 'SD'"
+                                                    contenteditable="false">
+                                                    {{stepParam?.val}}
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="w-100 text-center">
+                <button type="button" mat-raised-button color="basic" mat-dialog-close value="Cancel">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- <div *ngIf="data.type === 'SG'">
+        <div class="w-100">
+            <div class="w-100" style="max-height: 350px; overflow: auto;">
+                <span *ngIf="data.SGsteps?.length === 0"
+                    class="d-block py-4 w-100 font-medium-2 text-center font-weight-bold">
+                    No Steps Found
+                </span>
+                <span class="d-flex justify-content-end mr-1">
+                    <span class="d-inline-block mr-2">
+                        <span class="d-inline-block mr-1"
+                            style="width: 10px;height:10px;border-radius:50%;background:#1EBC68;"></span>
+                        <span>Data</span>
+                    </span>
+                    <span class="d-inline-block mr-2">
+                        <span class="d-inline-block mr-1"
+                            style="width: 10px;height:10px;border-radius:50%;background:#425f6d;"></span>
+                        <span>Static</span>
+                    </span>
+                    <span>
+                        <span class="d-inline-block mr-1"
+                            style="width: 10px;height:10px;border-radius:50%;background:#007bff;"></span>
+                        <span>Locators</span>
+                    </span>
+                </span>
+                <table class="table table-bordered" *ngIf="data.SGsteps?.length > 0">
+                    <thead>
+                        <tr>
+                            <th class="text-center text-muted font-small-2" width="3%">#</th>
+                            <th class="text-center text-muted font-small-2" width="3%">Type</th>
+                            <th class="text-left text-muted font-small-2" width="84%">Steps</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let step of data.SGsteps;let i=index" [class.invalidClass]="step.stpSts == 1"
+                        [ngClass]="{'font-italic': (step.stpSts == 1)}">
+                            <td class="text-center">{{i+1}}</td>
+                            <td class="text-center">
+                                <span *ngIf="step?.sScope === 'G'" matTooltip="Global">
+                                    <i class="icon-global rt-color-inverse font-weight-bold"></i>
+                                </span>
+                            </td>
+                            <td class="text-left">
+                                <div class="dropdown d-flex align-items-center"
+                                    *ngIf="step.paramValues?.length === 0 || !step.paramValues">
+                                    <span *ngIf="step.stpSts==1" style="font-size:19px">
+                                        //&nbsp;
+                                    </span>
+                                    <span style="width: 38px;" *ngIf="step.sType === 'SD'" 
+                                        class="py-0 text-right align-self-start text-danger pl-0 crsr_pntr position-relative mr-2">
+                                        {{step?.kName}}</span>
+                                    <span style="white-space: nowrap;"
+                                        *ngIf="step.sType === 'SD' && step.scStpType !== 'C' && step.scStpType !== 'A'">{{step.sName}}</span>
+                                    <span class="d-flex w-100 text-muted align-items-center"
+                                        *ngIf="step.scStpType === 'C' || step.scStpType === 'SG' || step.scStpType === 'A'"
+                                        contenteditable="false" style="opacity: 0.8;">
+                                    <span style="white-space: nowrap"
+                                        *ngIf="step.scStpType === 'SG'">{{step.scStpVal}}</span>
+                                    <span style="white-space: nowrap" *ngIf="step.scStpType === 'C'">&#x23;
+                                        {{step.scStpVal}}</span>
+                                    <span style="white-space: nowrap" *ngIf="step.scStpType === 'A'">&#x2731;
+                                        {{step.scStpVal}}</span>
+                                    </span>
+                                </div>
+                                <div class="dropdown d-flex align-items-center" *ngIf="step.paramValues?.length > 0">
+                                    <form class="actnBtn" autocomplete="off" class="d-inline">
+                                        <ng-template #stepdesc><span [innerHtml]="step?.stepDesc"></span>
+                                        </ng-template>
+                                        <span class="stepDeChngfInput d-flex align-items-center flex-wrap flex-row"
+                                            [matTooltip]="(step.stepDesc?.length > 0) ? step.stepDesc : ''">
+                                            <span *ngIf="step.stpSts==1" style="font-size:19px">
+                                                //&nbsp;
+                                            </span>
+                                            <span style="width: 38px;" *ngIf="step.sType === 'SD'" 
+                                                class="py-0 text-right align-self-start text-danger pl-0 crsr_pntr position-relative mr-2">
+                                                {{step?.kName}}</span>
+                                            <span *ngFor="let stepParam of step.splittedName;let paramIndex = index">
+                                                <span *ngIf="stepParam?.type === 'hint' && step.sType === 'SD'"
+                                                    class="mx-1">
+                                                    <span style="white-space: nowrap" class="d-inline-block"
+                                                        contenteditable="false">
+                                                        <strong><i>{{stepParam?.val}}</i></strong>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="stepParam?.type === 'static' && step?.sType === 'SD'"
+                                                    class="mx-1 position-relative locSctn">
+                                                    <span class="d-inline-block" contenteditable="false"
+                                                        style="white-space: nowrap;">
+                                                        <span style="font-weight: 700;color: #57b97e;"
+                                                            *ngIf="stepParam?.paramType === 'DATA'">{{stepParam?.val}}</span>
+                                                        <span style="font-weight: 700;color: #425f6d;"
+                                                            *ngIf="stepParam?.paramType === 'STATIC' || stepParam?.paramType === 'ENV-VAR' || stepParam?.paramType === 'API' || stepParam?.paramType === 'DB'">{{stepParam?.val}}</span>
+                                                        <span style="color: #007bff;font-weight: 500;"
+                                                            *ngIf="stepParam?.paramType === 'LOC'">{{stepParam?.configNm}}</span>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="stepParam?.type === 'placeholder' && step?.sType === 'SD'"
+                                                    class="position-relative locSctn">
+                                                    <span class="d-inline-block btn no_bg p-0 mx-1"
+                                                        contenteditable="false" attr.placeholder="{{stepParam?.val}}"
+                                                        style="color:#bdbdbd;font-style: italic;white-space: nowrap;">
+                                                        <i>( {{stepParam?.val}} )</i>
+                                                    </span>
+                                                </span>
+                                                <span style="white-space: nowrap;" class="d-inline-block"
+                                                    *ngIf="stepParam?.type === 'text' && step?.sType === 'SD'"
+                                                    contenteditable="false">
+                                                    {{stepParam?.val}}
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="w-100 text-center">
+                <button type="button" mat-raised-button color="basic" mat-dialog-close value="Cancel">Close</button>
+            </div>
+        </div>
+    </div> -->
+
+    <div *ngIf="data.type === 'UPLOADSC'">
+        <h4 class="my-3 text-muted font-medium-3">It supports only (.txt) format</h4>
+        <div class="w-100 py-2">
+            <div class="row mx-0">
+                <div class="col-8 py-3">
+                    <div class="custom-file" id="customFile" *ngIf="!shiftData">
+                        <input type="file" class="custom-file-input" id="uploadFile" aria-describedby="FileUpload"
+                            (change)="onSelectFile($event)">
+                        <label class="custom-file-label" for="uploadFile">
+                            <span *ngIf="scnrioFile != undefined">{{scnrioFile}}</span>
+                            <span *ngIf="scnrioFile === undefined">Upload Scenario Data</span>
+                        </label>
+                    </div>
+                    <div class="text-danger" *ngIf="shiftData">
+                        <div class="font-medium-1">Data Error in</div>
+                        <div class="font-small-3 text-bold-500">Scenario No : {{shiftArray[0]}}, Step No :
+                            {{shiftArray[1]}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w-100 pt-2">
+            <button type="button" class="btn btn-sm btn-secondary btn-flat btn-raised"
+                (click)="onNoClick(null);scnrioFile=undefined;upldScnrioFile=undefined;shiftData=false;shiftArray=undefined"
+                value="Cancel" title="Close" data-toggle="tooltip" data-placement="top">
+                Cancel
+            </button>
+            <button *ngIf="!shiftData" class="btn btn-info btn-flat btn-raised" type="submit" title="Upload Scenario"
+                value="Upload" [disabled]="scnrioFile === undefined" (click)="generateScenarios()" data-toggle="tooltip"
+                data-placement="top">
+                Upload
+            </button>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'R-PLANS'">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <div class="px-0 col-3">
+                    <mat-form-field>
+                        <input #searchG type="text" id="searchG" class="searchTxt" [(ngModel)]="term" matInput
+                            placeholder="Search" (keyup)="applyFilter($event.target.value)">
+                        <mat-icon matSuffix>
+                            <i *ngIf="!searchG.value" class="icon-search text-muted" style="font-size: 14px;"></i>
+                            <i *ngIf="searchG.value && searchG.value.length > 0"
+                                (click)="searchG.value = null;applyFilter('');" class="icon-x text-muted crsr_pntr"
+                                style="font-size: 14px;"></i>
+                        </mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+            <mat-dialog-content>
+                <table class="table table-responsive table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-muted font_md font-weight-normal" width="5%">#</th>
+                            <th class="text-muted font_md font-weight-normal" width="65%">Name (Single Run Only)</th>
+                            <th class="text-muted font_md font-weight-normal" width="25%">Bot Name</th>
+                            <th class="text-muted font_md font-weight-normal text-center" width="5%">Run</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let plan of filteredRunPlan ;let i =index">
+                            <td width="5%">{{i+1}}</td>
+                            <td width="65%">{{plan.name}}</td>
+                            <td width="25%">{{plan.botName}}</td>
+                            <td width="5%" class="text-center">
+                                <font matTooltip="Run Now" mat-icon-button
+                                    class="rt-color-inverse icon-play crsr_pntr font-small-3 crsr_pntr"
+                                    (click)="runNow(plan);">
+                                </font>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <h3 class="text-center py-2 text-info" *ngIf="searchG && filteredRunPlan && filteredRunPlan.length === 0;">No Data Found</h3>
+                </table>
+
+            </mat-dialog-content>
+        </div>
+    </div>
+    <div *ngIf="data.type === 'IMPRTSC'">
+        <div>
+            <span>
+                <mat-form-field class="col-3">
+                    <mat-label>Issue / Work Item Type</mat-label>
+                    <mat-select class="w-100" placeholder="Select Type" [(ngModel)]="issueType" name="issueType"
+                        id="issueType" (selectionChange)="importScenario($event)">
+                        <mat-option [value]="issue" *ngFor="let issue of data.issueTypeList;">
+                            {{issue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </span>
+            <span class="align-items-end justify-content-end" style="float: right;">
+                <button mat-raised-button color="primary" [disabled]="selection.selected.length ===0 ? true :false"
+                    value="Save" type="submit" [mat-dialog-close]="selection.selected">
+                    Import
+                </button>
+            </span>
+        </div>
+        <div class="" style="height: 400px;overflow: auto;">
+            <table mat-table [dataSource]="filteredRdata" class="w-100 mat-elevation-z2 table-hover"
+                [hidden]="showImpMdl">
+                <ng-container matColumnDef="select">
+                    <th mat-header-cell *matHeaderCellDef class="text-black-50" style="width: 8%;">
+                        <mat-checkbox color="accent" (change)="$event ? masterToggle() : null"
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()">
+                        </mat-checkbox>
+                    </th>
+                    <td mat-cell *matCellDef="let element;" style="width: 8%;">
+                        <mat-checkbox color="accent" (click)="$event.stopPropagation()"
+                            (change)="$event ? selection.toggle(element) : null"
+                            [checked]="selection.isSelected(element)">
+                        </mat-checkbox>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="no">
+                    <th mat-header-cell *matHeaderCellDef class="text-black-50 font_md" style="width: 7%;">
+                        # </th>
+                    <td mat-cell *matCellDef="let element;let i = index;" style="width: 7%;"
+                        (click)="onScNameClick(element)">
+                        {{element?.sNo}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef class="text-black-50 font_md" style="width: 30%;">
+                        Name </th>
+                    <td mat-cell *matCellDef="let element;" style="width: 30%;" (click)="onScNameClick(element)">
+                        {{element?.summary}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="desc">
+                    <th mat-header-cell *matHeaderCellDef class="text-black-50 font_md" style="width: 45%;">Desc</th>
+                    <td mat-cell *matCellDef="let element;" style="width: 45%;" (click)="onScNameClick(element)">
+                        {{element?.description}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef class="text-center text-black-50 font_md" style="width: 10%;">
+                        Status</th>
+                    <td mat-cell class="text-center" *matCellDef="let element;" style="width: 10%;"
+                        (click)="onScNameClick(element)">
+                        {{element?.status}}
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="rowDataColumns; sticky: true;"></tr>
+                <tr mat-row *matRowDef="let row;columns: rowDataColumns;let i = index;" class="hvr_row"></tr>
+            </table>
+            <mat-paginator [hidden]="showImpMdl" #scimpPaginator [length]="scLength" [pageSize]="10">
+            </mat-paginator>
+            <h3 class="text-muted text-center" *ngIf="issueType == ''">Choose issue or work item type to load data.
+            </h3>
+            <h3 class="text-muted text-center" *ngIf="showImpMdl && issueType != ''">No Data Found.</h3>
+        </div>
+    </div>
+
+    <div *ngIf="data.type === 'CWI'">
+        <div>
+            <span>
+                <mat-form-field class="col-8">
+                    <mat-label>Issue / Work Item Type</mat-label>
+                    <mat-select class="w-100" placeholder="Select Type" [(ngModel)]="issueType" name="issueType"
+                        id="issueType">
+                        <mat-option [value]="issue" *ngFor="let issue of data.issueTypeList;">
+                            {{issue}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </span>
+        </div>
+        <div class="text-center">
+            <button type="button" mat-raised-button color="basic" class="mr-2" mat-dialog-close value="Cancel">Cancel</button>
+            <button mat-raised-button color="primary" [disabled]="issueType == undefined ? true : false" value="Save" type="submit"
+                [mat-dialog-close]="issueType">
+                Export
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="data.type === 'MODSCE'">
+        <div class="d-flex align-items-center" style="padding-left: 24px;">
+            <div class="px-0 col-3">
+                <mat-form-field>
+                    <input #searchG type="text" id="searchG" class="searchTxt" [(ngModel)]="term" matInput
+                        placeholder="Search" (keyup)="applyFilterScen($event.target.value)">
+                    <mat-icon matSuffix>
+                        <i *ngIf="!searchG.value" class="icon-search text-muted" style="font-size: 14px;"></i>
+                        <i *ngIf="searchG.value && searchG.value.length > 0"
+                            (click)="searchG.value = null;applyFilterScen('');" class="icon-x text-muted crsr_pntr"
+                            style="font-size: 14px;"></i>
+                    </mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+        <div>
+            <div style="padding-left: 24px;" class="text-muted mat-cell"> {{ selection.selected.length || selectedLength }} out of {{ data?.scenariosList?.length }} scenario's selected
+            </div>
+              <div class=" font-medium-1 text-muted flex-grow-1 mt-4"  style="height: 300px;overflow: auto;">     
+                    
+                  <table mat-table [dataSource]="filterscenario" class="col-12 mat-elevation-z2"  
+                  [hidden]="data?.scenariosList?.length <= 0">
+                    
+                  <ng-container matColumnDef="select">
+                    <th mat-header-cell *matHeaderCellDef class="text-black-50"
+                        style="width: 10%;">
+                        <mat-checkbox color="accent" 
+                            (change)="$event ? masterToggle() : null"
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()">
+                        </mat-checkbox>
+                    </th>
+                    <td mat-cell *matCellDef="let element;" style="width: 8%;">
+                        <mat-checkbox color="accent" 
+                            (click)="$event.stopPropagation(); "
+                            (change)="updateSelectedItems(element)"
+                            [checked]="masterToggleClicked ? selection.isSelected(element) : selectedItemsIds(element._id)">
+                            </mat-checkbox>                    
+                    </td>
+                </ng-container>
+                  <ng-container matColumnDef="S No">
+                      <th class="text-left text-muted textWidth3" mat-header-cell *matHeaderCellDef> # </th>
+                      <td class=" text-left text-muted" mat-cell *matCellDef="let element;let i = index;" style="width: 7%;">{{element.sNo}}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="Name">
+                      <th class="text-left text-muted textWidth3" mat-header-cell *matHeaderCellDef> Name </th>
+                      <td class="text-left text-muted" mat-cell  *matCellDef="let element">
+                       
+                        {{ element?.name }}
+                      </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="header"></tr>
+                    <tr mat-row *matRowDef="let row; columns: header;"></tr>
+                  
+                  </table>  
+                  
+              </div>
+              <mat-paginator #scePaginator [length]="filterscenario.length" [pageSize]="10">
+            </mat-paginator>
+              <div class="w-100 text-center p-2 pt-2" style="margin-top: 20px;">
+                <button type="button" value="Cancel" mat-raised-button color="basic" class="mr-2"
+                  mat-dialog-close>Close</button>
+            </div>
+          </div>
+</div>
+
+<div *ngIf="data.type === 'EXTPRO'">
+    <div class="d-flex align-items-center">
+        <div class="px-0 col-6">
+            <mat-form-field class="col">
+                <mat-label>Choose Project</mat-label>
+                <mat-select class=" prj" name="prjNames" [(ngModel)]="prjNames" (selectionChange)="onSelectionchange()"
+                    [value]="prj">
+                    <mat-option *ngFor="let prj of prjlist" [value]="prj">{{prj.prjName}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+        </div>
+    </div>
+    <div class="pl-3 px-0 pb-2 col align-items-center">
+        <mat-error *ngIf="showError">Source and Destination Project are same , Please Choose Different Project</mat-error>
+    </div>
+    <div class="align-items-center col">Note : The copy includes associated test data, steps, local
+        steps, step groups,<br> functions, custom files, environment variables, API, DB queries, variables, and
+        locators. </div>
+    <div class="w-100 text-center p-2">
+        <button type="button" value="Cancel" mat-raised-button color="basic" class="mr-2"
+            mat-dialog-close>Cancel</button>
+            <button type="button" value="Save" mat-raised-button mat-dialog-close color="primary" [disabled]="showError || !prjNames" (click)="exportProject()">Copy</button>
+    </div>
+</div>
+</div>
